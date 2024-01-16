@@ -13,6 +13,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 builder.Services.AddSingleton<LoadSimulatorService>();
+builder.Services.AddSingleton<IStatsService, StatsService>();
 var app = builder.Build();
 
 app.MapControllers();
