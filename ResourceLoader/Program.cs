@@ -1,4 +1,6 @@
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using ResourceLoader.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +16,17 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddSingleton<LoadSimulatorService>();
 builder.Services.AddSingleton<IStatsService, StatsService>();
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource
+        .AddService(serviceName: builder.Environment.ApplicationName))
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddProcessInstrumentation()
+        .AddConsoleExporter((exporterOptions, metricReaderOptions) =>
+        {
+            metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 1000;
+        }));
+
 var app = builder.Build();
 
 app.MapControllers();
